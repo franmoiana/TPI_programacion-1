@@ -50,42 +50,36 @@ def pedir_opcion(mensaje, opciones_validas):
         print("Opción inválida.")
 
 
-def pedir_rango_no_negativo(mensaje_minimo, mensaje_maximo):
-    while True:
-        minimo = pedir_entero_no_negativo(mensaje_minimo)
-        maximo = pedir_entero_no_negativo(mensaje_maximo)
-
-        if minimo <= maximo:
-            return minimo, maximo
-
-        print("Error: el valor mínimo no puede ser mayor que el máximo.")
-
-
-def validar_fila_csv(fila):
+def validar_fila_csv(fila, numero_fila):
     campos_requeridos = ["nombre", "poblacion", "superficie", "continente"]
 
     if None in fila:
-        return None, "la cantidad de columnas no es correcta"
+        print(f"Error en la fila {numero_fila}: la cantidad de columnas no es correcta.")
+        return None
 
     for campo in campos_requeridos:
         if campo not in fila or fila[campo] is None:
-            return None, f"falta el campo {campo}"
+            print(f"Error en la fila {numero_fila}: falta el campo {campo}.")
+            return None
 
     nombre = fila["nombre"].strip()
     continente = fila["continente"].strip()
 
     if nombre == "" or continente == "":
-        return None, "el nombre y el continente no pueden estar vacíos"
+        print(f"Error en la fila {numero_fila}: el nombre y el continente no pueden estar vacíos.")
+        return None
 
     try:
         poblacion = int(fila["poblacion"])
         superficie = int(fila["superficie"])
 
     except (TypeError, ValueError):
-        return None, "la población y la superficie deben ser números enteros"
+        print(f"Error en la fila {numero_fila}: la población y la superficie deben ser números enteros.")
+        return None
 
     if poblacion <= 0 or superficie <= 0:
-        return None, "la población y la superficie deben ser mayores que cero"
+        print(f"Error en la fila {numero_fila}: la población y la superficie deben ser mayores que cero.")
+        return None
 
     pais = {
         "nombre": nombre,
@@ -94,4 +88,4 @@ def validar_fila_csv(fila):
         "continente": continente
     }
 
-    return pais, None
+    return pais

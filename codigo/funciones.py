@@ -1,5 +1,5 @@
 import csv
-from validaciones import pedir_entero_positivo, pedir_opcion, pedir_rango_no_negativo, pedir_texto, validar_fila_csv
+from validaciones import pedir_entero_no_negativo, pedir_entero_positivo, pedir_opcion, pedir_texto, validar_fila_csv
 
 # ------------------- CARGA Y GUARDADO CSV ---------------------------
 def cargar_csv(ruta):
@@ -25,14 +25,15 @@ def cargar_csv(ruta):
                 print("Error: faltan columnas en el CSV:", ", ".join(campos_faltantes))
                 return paises
 
-            for numero_fila, fila in enumerate(lector, start=2):
-                pais, error = validar_fila_csv(fila)
+            numero_fila = 2
 
-                if error is None:
+            for fila in lector:
+                pais = validar_fila_csv(fila, numero_fila)
+
+                if pais is not None:
                     paises.append(pais)
 
-                else:
-                    print(f"Error en la fila {numero_fila}: {error}.")
+                numero_fila += 1
 
     except FileNotFoundError:
         print("No se encontró el archivo CSV.")
@@ -56,14 +57,17 @@ def guardar_csv(paises, ruta):
     try:
         paises_validados = []
 
-        for pais in paises:
-            pais_validado, error = validar_fila_csv(pais)
+        numero_fila = 2
 
-            if error is not None:
-                print(f"No se pudieron guardar los datos: {error}.")
+        for pais in paises:
+            pais_validado = validar_fila_csv(pais, numero_fila)
+
+            if pais_validado is None:
+                print("No se guardaron los datos porque hay información inválida.")
                 return False
 
             paises_validados.append(pais_validado)
+            numero_fila += 1
 
         with open(ruta, "w", newline="", encoding="utf-8") as archivo:
             campos = ["nombre", "poblacion", "superficie", "continente"]
@@ -230,18 +234,26 @@ def filtrar_paises(paises):
         mostrar_paises(resultados)
 
     elif opcion == "2":
-        minimo, maximo = pedir_rango_no_negativo(
-            "Ingrese población mínima: ",
-            "Ingrese población máxima: "
-        )
+        minimo = pedir_entero_no_negativo("Ingrese población mínima: ")
+        maximo = pedir_entero_no_negativo("Ingrese población máxima: ")
+
+        while minimo > maximo:
+            print("Error: el valor mínimo no puede ser mayor que el máximo.")
+            minimo = pedir_entero_no_negativo("Ingrese población mínima: ")
+            maximo = pedir_entero_no_negativo("Ingrese población máxima: ")
+
         resultados = filtrar_por_rango_poblacion(paises, minimo, maximo)
         mostrar_paises(resultados)
 
     elif opcion == "3":
-        minimo, maximo = pedir_rango_no_negativo(
-            "Ingrese superficie mínima: ",
-            "Ingrese superficie máxima: "
-        )
+        minimo = pedir_entero_no_negativo("Ingrese superficie mínima: ")
+        maximo = pedir_entero_no_negativo("Ingrese superficie máxima: ")
+
+        while minimo > maximo:
+            print("Error: el valor mínimo no puede ser mayor que el máximo.")
+            minimo = pedir_entero_no_negativo("Ingrese superficie mínima: ")
+            maximo = pedir_entero_no_negativo("Ingrese superficie máxima: ")
+
         resultados = filtrar_por_rango_superficie(paises, minimo, maximo)
         mostrar_paises(resultados)
 
