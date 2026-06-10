@@ -41,4 +41,9 @@ def menu():
             break
 
 paises = cargar_csv("paises.csv")
-menu()
+
+if len(paises) > 0:
+    menu()
+else:
+    print()
+    print("El programa no puede iniciarse porque no se cargaron países.")

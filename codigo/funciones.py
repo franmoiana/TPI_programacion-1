@@ -4,6 +4,7 @@ from validaciones import pedir_entero_no_negativo, pedir_entero_positivo, pedir_
 # ------------------- CARGA Y GUARDADO CSV ---------------------------
 def cargar_csv(ruta):
     paises = []
+    error_encontrado = False
 
     try:
         with open(ruta, encoding="utf-8") as archivo:
@@ -33,7 +34,18 @@ def cargar_csv(ruta):
                 if pais is not None:
                     paises.append(pais)
 
+                else:
+                    error_encontrado = True
+
                 numero_fila += 1
+
+            if error_encontrado:
+                print()
+                print("==============================================")
+                print("ERROR: el archivo CSV contiene datos inválidos.")
+                print("Corrija las filas indicadas antes de continuar.")
+                print("==============================================")
+                return []
 
     except FileNotFoundError:
         print("No se encontró el archivo CSV.")
