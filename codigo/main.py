@@ -42,8 +42,8 @@ def menu():
 
 paises = cargar_csv("paises.csv")
 
-if len(paises) > 0:
+if paises is not None:
     menu()
 else:
     print()
-    print("El programa no puede iniciarse porque no se cargaron países.")
+    print("El programa no puede iniciarse porque el archivo CSV debe corregirse.")

@@ -14,7 +14,7 @@ def cargar_csv(ruta):
 
             if lector.fieldnames is None:
                 print("Error: el archivo CSV está vacío.")
-                return paises
+                return None
 
             campos_faltantes = []
 
@@ -24,7 +24,7 @@ def cargar_csv(ruta):
 
             if len(campos_faltantes) > 0:
                 print("Error: faltan columnas en el CSV:", ", ".join(campos_faltantes))
-                return paises
+                return None
 
             numero_fila = 2
 
@@ -45,22 +45,27 @@ def cargar_csv(ruta):
                 print("ERROR: el archivo CSV contiene datos inválidos.")
                 print("Corrija las filas indicadas antes de continuar.")
                 print("==============================================")
-                return []
+                return None
 
     except FileNotFoundError:
         print("No se encontró el archivo CSV.")
+        return None
 
     except PermissionError:
         print("No se tienen permisos para leer el archivo CSV.")
+        return None
 
     except UnicodeDecodeError:
         print("No se pudo leer el archivo CSV porque su codificación no es válida.")
+        return None
 
     except csv.Error as error:
         print(f"Error de formato en el archivo CSV: {error}.")
+        return None
 
     except OSError as error:
         print(f"No se pudo leer el archivo CSV: {error}.")
+        return None
 
     return paises
 
