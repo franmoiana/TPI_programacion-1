@@ -1,5 +1,6 @@
 import csv
 
+# ------------------- CARGA Y GUARDADO CSV ---------------------------
 def cargar_csv(ruta):
     paises = []
     try:
@@ -25,11 +26,49 @@ def guardar_csv(paises, ruta):
         for pais in paises:
             escritor.writerow(pais)
 
-# ---- Actualizar Pais -----
+# ---------------------- AGREGAR PAIS ------------------------------
+def agregar_pais(paises):
+    nombre = input("Ingrese el nombre del país: ").strip()
+
+    if nombre == "":
+        print("Error: el nombre no puede estar vacío.")
+        return
+
+    poblacion = input("Ingrese la población del país: ").strip()
+
+    if not poblacion.isdigit():
+        print("Error: la población debe ser un número entero.")
+        return
+
+    superficie = input("Ingrese la superficie del país en km²: ").strip()
+
+    if not superficie.isdigit():
+        print("Error: la superficie debe ser un número entero.")
+        return
+
+    continente = input("Ingrese el continente del país: ").strip()
+
+    if continente == "":
+        print("Error: el continente no puede estar vacío.")
+        return
+
+    nuevo_pais = {
+        "nombre": nombre,
+        "poblacion": int(poblacion),
+        "superficie": int(superficie),
+        "continente": continente
+    }
+
+    paises.append(nuevo_pais)
+
+    print(f"País '{nombre}' agregado correctamente.")
+
+
 def actualizar_pais(paises):
     nombre = input("Ingrese el nombre del país a actualizar: ").strip()
 
     pais_encontrado = None
+
     for pais in paises:
         if pais["nombre"].lower() == nombre.lower():
             pais_encontrado = pais
@@ -39,24 +78,48 @@ def actualizar_pais(paises):
         print(f"No se encontró el país '{nombre}'.")
         return
 
-# ----- Actualizar poblacion -----
+    print("\n¿Qué dato desea actualizar?")
+    print("1. Población")
+    print("2. Superficie")
+    print("3. Población y superficie")
 
+    opcion = input("Seleccione una opción: ").strip()
 
-    nueva_poblacion = input(f"Nueva población (actual: {pais_encontrado['poblacion']}) [Enter para no cambiar]: ").strip()
-    if nueva_poblacion.isdigit():
-        pais_encontrado["poblacion"] = int(nueva_poblacion)
+    if opcion == "1":
+        nueva_poblacion = input(f"Nueva población (actual: {pais_encontrado['poblacion']}): ").strip()
 
-# ----- Actualizar superficie -----
+        if nueva_poblacion.isdigit():
+            pais_encontrado["poblacion"] = int(nueva_poblacion)
+            print(f"Población de '{pais_encontrado['nombre']}' actualizada correctamente.")
+        else:
+            print("Error: la población debe ser un número entero.")
 
-    nueva_superficie = input(f"Nueva superficie (actual: {pais_encontrado['superficie']} km²) [Enter para no cambiar]: ").strip()
-    if nueva_superficie.isdigit():
-        pais_encontrado["superficie"] = int(nueva_superficie)
+    elif opcion == "2":
+        nueva_superficie = input(f"Nueva superficie (actual: {pais_encontrado['superficie']} km²): ").strip()
 
-    print(f"País '{pais_encontrado['nombre']}' actualizado correctamente.")
+        if nueva_superficie.isdigit():
+            pais_encontrado["superficie"] = int(nueva_superficie)
+            print(f"Superficie de '{pais_encontrado['nombre']}' actualizada correctamente.")
+        else:
+            print("Error: la superficie debe ser un número entero.")
+
+    elif opcion == "3":
+        nueva_poblacion = input(f"Nueva población (actual: {pais_encontrado['poblacion']}): ").strip()
+        nueva_superficie = input(f"Nueva superficie (actual: {pais_encontrado['superficie']} km²): ").strip()
+
+        if nueva_poblacion.isdigit() and nueva_superficie.isdigit():
+            pais_encontrado["poblacion"] = int(nueva_poblacion)
+            pais_encontrado["superficie"] = int(nueva_superficie)
+            print(f"País '{pais_encontrado['nombre']}' actualizado correctamente.")
+        else:
+            print("Error: población y superficie deben ser números enteros.")
+
+    else:
+        print("Opción inválida.")
 
 # ----- BUSQUEDA DE PAIS ----
 
-def buscar_pais(paises, texto_busqueda):
+def buscar_por_nombre(paises, texto_busqueda):
     resultados = []
 
     for pais in paises:
@@ -77,60 +140,84 @@ def mostrar_paises(paises):
             print("Superficie:", pais["superficie"], "km²")
             print("Continente:", pais["continente"])
 
-busqueda = input("Ingrese el nombre del país: ")
-
-resultados = buscar_pais(paises, busqueda)
-
-mostrar_paises(resultados)
-
 # ---- FILTROS ----
 
-def filtrar_por_continente(paises, busqueda_continente):
-    resultados = []
+def filtrar_paises(paises):
+    print()
+    print("¿Cómo desea filtrar los países?")
+    print("1. Por continente")
+    print("2. Por rango de población")
+    print("3. Por rango de superficie")
 
-    for pais in paises:
-        if busqueda_continente.lower().strip() == pais["continente"].lower():
-            resultados.append(pais)
+    opcion = input("\nIngrese una opción: ").strip()
 
-    return resultados
+    if opcion == "1":
+        continente = input("Ingrese el continente: ").strip()
+        resultados = filtrar_por_continente(paises, continente)
+        mostrar_paises(resultados)
 
-def filtrar_por_rango_poblacion(paises, busqueda_poblacion_min, busqueda_poblacion_max ):
-    resultados = []
+    elif opcion == "2":
+        minimo = input("Ingrese población mínima: ").strip()
+        maximo = input("Ingrese población máxima: ").strip()
 
-    for pais in paises:
-        if busqueda_poblacion_min <= pais["poblacion"] <= busqueda_poblacion_max:
-            resultados.append(pais)
+        if minimo.isdigit() and maximo.isdigit():
+            resultados = filtrar_por_rango_poblacion(paises, int(minimo), int(maximo))
+            mostrar_paises(resultados)
+        else:
+            print("Error: los valores de población deben ser números enteros.")
 
-    return resultados
+    elif opcion == "3":
+        minimo = input("Ingrese superficie mínima: ").strip()
+        maximo = input("Ingrese superficie máxima: ").strip()
 
-def filtrar_por_rango_superficie(paises, busqueda_superficie_min, busqueda_superficie_max ):
-    resultados = []
+        if minimo.isdigit() and maximo.isdigit():
+            resultados = filtrar_por_rango_superficie(paises, int(minimo), int(maximo))
+            mostrar_paises(resultados)
+        else:
+            print("Error: los valores de superficie deben ser números enteros.")
 
-    for pais in paises:
-        if busqueda_superficie_min <= pais["superficie"] <= busqueda_superficie_max:
-            resultados.append(pais)
-
-    return resultados
+    else:
+        print("Opción inválida.")
 
 # ---- ORDENAMIENTOS ---- 
 
-def ordenar_segun_criterio(paises, criterio, descendente):
+def ordenar_paises(paises):
+    print()
+    print("¿Por qué criterio desea ordenar?")
+    print("1. Nombre")
+    print("2. Población")
+    print("3. Superficie")
 
-    if criterio == "nombre":
-        orden_nombre = sorted(paises, key=lambda pais: pais["nombre"], reverse=descendente)
-        return orden_nombre
-    
-    elif criterio == "poblacion":
-        orden_poblacion = sorted(paises, key=lambda pais: pais["poblacion"], reverse=descendente)
-        return orden_poblacion
-    
-    elif criterio == "superficie":
-        orden_superficie = sorted(paises, key=lambda pais: pais["superficie"], reverse=descendente)
-        return orden_superficie
-    
+    opcion_criterio = input("\nIngrese una opción: ").strip()
+
+    if opcion_criterio == "1":
+        criterio = "nombre"
+    elif opcion_criterio == "2":
+        criterio = "poblacion"
+    elif opcion_criterio == "3":
+        criterio = "superficie"
     else:
-        print("Criterio incorrecto")
-        return []
+        print("Opción inválida.")
+        return
+
+    print()
+    print("¿En qué orden desea mostrar los países?")
+    print("1. Ascendente")
+    print("2. Descendente")
+
+    opcion_orden = input("\nIngrese una opción: ").strip()
+
+    if opcion_orden == "1":
+        descendente = False
+    elif opcion_orden == "2":
+        descendente = True
+    else:
+        print("Opción inválida.")
+        return
+
+    paises_ordenados = ordenar_segun_criterio(paises, criterio, descendente)
+
+    mostrar_paises(paises_ordenados)
 
 # ---- ESTADISTICAS ----
 
@@ -140,14 +227,17 @@ def estadistica_mayor_poblacion(paises):
     pais_mayor = max(paises, key=lambda pais: pais["poblacion"])
     return pais_mayor
 
+
 def estadistica_menor_poblacion(paises):
-    pais_menor = min(paises, key=lambda pais : pais["poblacion"])
+    pais_menor = min(paises, key=lambda pais: pais["poblacion"])
     return pais_menor
+
 
 # Promedio poblacion y superficie
 
 def promedio_poblacion(paises):
     total = 0
+
     for pais in paises:
         total += pais["poblacion"]
 
@@ -155,8 +245,10 @@ def promedio_poblacion(paises):
 
     return promedio
 
+
 def promedio_superficie(paises):
     total = 0
+
     for pais in paises:
         total += pais["superficie"]
 
@@ -164,10 +256,10 @@ def promedio_superficie(paises):
 
     return promedio
 
+
 # Cantidad de paises por continente
 
 def paises_por_continente(paises):
-    
     continentes = {}
 
     for pais in paises:
@@ -179,3 +271,30 @@ def paises_por_continente(paises):
             continentes[continente] += 1
 
     return continentes
+
+
+# Mostrar estadisticas generales
+
+def mostrar_estadisticas(paises):
+    if len(paises) == 0:
+        print("No hay países cargados para calcular estadísticas.")
+        return
+
+    mayor_poblacion = estadistica_mayor_poblacion(paises)
+    menor_poblacion = estadistica_menor_poblacion(paises)
+    promedio_pob = promedio_poblacion(paises)
+    promedio_sup = promedio_superficie(paises)
+    continentes = paises_por_continente(paises)
+
+    print()
+    print("----- ESTADÍSTICAS -----")
+    print(f"País con mayor población: {mayor_poblacion['nombre']} ({mayor_poblacion['poblacion']} habitantes)")
+    print(f"País con menor población: {menor_poblacion['nombre']} ({menor_poblacion['poblacion']} habitantes)")
+    print(f"Promedio de población: {promedio_pob:.2f} habitantes")
+    print(f"Promedio de superficie: {promedio_sup:.2f} km²")
+
+    print()
+    print("Cantidad de países por continente:")
+
+    for continente, cantidad in continentes.items():
+        print(f"{continente}: {cantidad}")
