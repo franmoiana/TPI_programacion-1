@@ -1,75 +1,118 @@
 import csv
+from validaciones import pedir_entero_positivo, pedir_opcion, pedir_rango_no_negativo, pedir_texto, validar_fila_csv
 
 # ------------------- CARGA Y GUARDADO CSV ---------------------------
 def cargar_csv(ruta):
     paises = []
+
     try:
         with open(ruta, encoding="utf-8") as archivo:
-            lector = csv.DictReader(archivo)
-            for fila in lector:
-                paises.append({
-                    "nombre": fila["nombre"],
-                    "poblacion": int(fila["poblacion"]),
-                    "superficie": int(fila["superficie"]),
-                    "continente": fila["continente"]
-                })
+            lector = csv.DictReader(archivo, strict=True)
+
+            campos_requeridos = ["nombre", "poblacion", "superficie", "continente"]
+
+            if lector.fieldnames is None:
+                print("Error: el archivo CSV está vacío.")
+                return paises
+
+            campos_faltantes = []
+
+            for campo in campos_requeridos:
+                if campo not in lector.fieldnames:
+                    campos_faltantes.append(campo)
+
+            if len(campos_faltantes) > 0:
+                print("Error: faltan columnas en el CSV:", ", ".join(campos_faltantes))
+                return paises
+
+            for numero_fila, fila in enumerate(lector, start=2):
+                pais, error = validar_fila_csv(fila)
+
+                if error is None:
+                    paises.append(pais)
+
+                else:
+                    print(f"Error en la fila {numero_fila}: {error}.")
+
     except FileNotFoundError:
         print("No se encontró el archivo CSV.")
+
+    except PermissionError:
+        print("No se tienen permisos para leer el archivo CSV.")
+
+    except UnicodeDecodeError:
+        print("No se pudo leer el archivo CSV porque su codificación no es válida.")
+
+    except csv.Error as error:
+        print(f"Error de formato en el archivo CSV: {error}.")
+
+    except OSError as error:
+        print(f"No se pudo leer el archivo CSV: {error}.")
+
     return paises
 
 
 def guardar_csv(paises, ruta):
-    with open(ruta, "w", newline="", encoding="utf-8") as archivo:
-        campos = ["nombre", "poblacion", "superficie", "continente"]
-        escritor = csv.DictWriter(archivo, fieldnames=campos)
-        escritor.writeheader()
+    try:
+        paises_validados = []
+
         for pais in paises:
-            escritor.writerow(pais)
+            pais_validado, error = validar_fila_csv(pais)
+
+            if error is not None:
+                print(f"No se pudieron guardar los datos: {error}.")
+                return False
+
+            paises_validados.append(pais_validado)
+
+        with open(ruta, "w", newline="", encoding="utf-8") as archivo:
+            campos = ["nombre", "poblacion", "superficie", "continente"]
+            escritor = csv.DictWriter(archivo, fieldnames=campos)
+            escritor.writeheader()
+
+            for pais in paises_validados:
+                escritor.writerow(pais)
+
+        print("Los datos se guardaron correctamente.")
+        return True
+
+    except PermissionError:
+        print("No se tienen permisos para guardar el archivo CSV.")
+
+    except csv.Error as error:
+        print(f"Error de formato al guardar el archivo CSV: {error}.")
+
+    except OSError as error:
+        print(f"No se pudo guardar el archivo CSV: {error}.")
+
+    return False
 
 # 1. //////////  AGREGAR PAIS \\\\\\\\\\\\
 
 # ---- Agregar pais junto con sus datos ----
 def agregar_pais(paises):
-    nombre = input("Ingrese el nombre del país: ").strip()
-
-    if nombre == "":
-        print("Error: el nombre no puede estar vacío.")
-        return
-
-    poblacion = input("Ingrese la población del país: ").strip()
-
-    if not poblacion.isdigit():
-        print("Error: la población debe ser un número entero.")
-        return
-
-    superficie = input("Ingrese la superficie del país en km²: ").strip()
-
-    if not superficie.isdigit():
-        print("Error: la superficie debe ser un número entero.")
-        return
-
-    continente = input("Ingrese el continente del país: ").strip()
-
-    if continente == "":
-        print("Error: el continente no puede estar vacío.")
-        return
+    nombre = pedir_texto("Ingrese el nombre del país: ")
+    poblacion = pedir_entero_positivo("Ingrese la población del país: ")
+    superficie = pedir_entero_positivo("Ingrese la superficie del país en km²: ")
+    continente = pedir_texto("Ingrese el continente del país: ")
 
     nuevo_pais = {
         "nombre": nombre,
-        "poblacion": int(poblacion),
-        "superficie": int(superficie),
+        "poblacion": poblacion,
+        "superficie": superficie,
         "continente": continente
     }
 
     paises.append(nuevo_pais)
 
     print(f"País '{nombre}' agregado correctamente.")
+    return True
 
 # 2. ///////////////// ACTUALIZAR POBLACION O SUPERFICIE \\\\\\\\\\\\\
 
 
 def actualizar_pais(paises):
-    nombre = input("Ingrese el nombre del país a actualizar: ").strip()
+    nombre = pedir_texto("Ingrese el nombre del país a actualizar: ")
 
     pais_encontrado = None
 
@@ -80,46 +123,41 @@ def actualizar_pais(paises):
 
     if not pais_encontrado:
         print(f"No se encontró el país '{nombre}'.")
-        return
+        return False
 
     print("\n¿Qué dato desea actualizar?")
     print("1. Población")
     print("2. Superficie")
     print("3. Población y superficie")
 
-    opcion = input("Seleccione una opción: ").strip()
+    opcion = pedir_opcion("Seleccione una opción: ", ["1", "2", "3"])
 
     if opcion == "1":
-        nueva_poblacion = input(f"Nueva población (actual: {pais_encontrado['poblacion']}): ").strip()
-
-        if nueva_poblacion.isdigit():
-            pais_encontrado["poblacion"] = int(nueva_poblacion)
-            print(f"Población de '{pais_encontrado['nombre']}' actualizada correctamente.")
-        else:
-            print("Error: la población debe ser un número entero.")
+        nueva_poblacion = pedir_entero_positivo(
+            f"Nueva población (actual: {pais_encontrado['poblacion']}): "
+        )
+        pais_encontrado["poblacion"] = nueva_poblacion
+        print(f"Población de '{pais_encontrado['nombre']}' actualizada correctamente.")
 
     elif opcion == "2":
-        nueva_superficie = input(f"Nueva superficie (actual: {pais_encontrado['superficie']} km²): ").strip()
-
-        if nueva_superficie.isdigit():
-            pais_encontrado["superficie"] = int(nueva_superficie)
-            print(f"Superficie de '{pais_encontrado['nombre']}' actualizada correctamente.")
-        else:
-            print("Error: la superficie debe ser un número entero.")
+        nueva_superficie = pedir_entero_positivo(
+            f"Nueva superficie (actual: {pais_encontrado['superficie']} km²): "
+        )
+        pais_encontrado["superficie"] = nueva_superficie
+        print(f"Superficie de '{pais_encontrado['nombre']}' actualizada correctamente.")
 
     elif opcion == "3":
-        nueva_poblacion = input(f"Nueva población (actual: {pais_encontrado['poblacion']}): ").strip()
-        nueva_superficie = input(f"Nueva superficie (actual: {pais_encontrado['superficie']} km²): ").strip()
+        nueva_poblacion = pedir_entero_positivo(
+            f"Nueva población (actual: {pais_encontrado['poblacion']}): "
+        )
+        nueva_superficie = pedir_entero_positivo(
+            f"Nueva superficie (actual: {pais_encontrado['superficie']} km²): "
+        )
+        pais_encontrado["poblacion"] = nueva_poblacion
+        pais_encontrado["superficie"] = nueva_superficie
+        print(f"País '{pais_encontrado['nombre']}' actualizado correctamente.")
 
-        if nueva_poblacion.isdigit() and nueva_superficie.isdigit():
-            pais_encontrado["poblacion"] = int(nueva_poblacion)
-            pais_encontrado["superficie"] = int(nueva_superficie)
-            print(f"País '{pais_encontrado['nombre']}' actualizado correctamente.")
-        else:
-            print("Error: población y superficie deben ser números enteros.")
-
-    else:
-        print("Opción inválida.")
+    return True
 
 # 3. /////////////// BUSQUEDA DE PAIS \\\\\\\\\\\\\\\
 
@@ -184,35 +222,28 @@ def filtrar_paises(paises):
     print("2. Por rango de población")
     print("3. Por rango de superficie")
 
-    opcion = input("\nIngrese una opción: ").strip()
+    opcion = pedir_opcion("\nIngrese una opción: ", ["1", "2", "3"])
 
     if opcion == "1":
-        continente = input("Ingrese el continente: ").strip()
+        continente = pedir_texto("Ingrese el continente: ")
         resultados = filtrar_por_continente(paises, continente)
         mostrar_paises(resultados)
 
     elif opcion == "2":
-        minimo = input("Ingrese población mínima: ").strip()
-        maximo = input("Ingrese población máxima: ").strip()
-
-        if minimo.isdigit() and maximo.isdigit():
-            resultados = filtrar_por_rango_poblacion(paises, int(minimo), int(maximo))
-            mostrar_paises(resultados)
-        else:
-            print("Error: los valores de población deben ser números enteros.")
+        minimo, maximo = pedir_rango_no_negativo(
+            "Ingrese población mínima: ",
+            "Ingrese población máxima: "
+        )
+        resultados = filtrar_por_rango_poblacion(paises, minimo, maximo)
+        mostrar_paises(resultados)
 
     elif opcion == "3":
-        minimo = input("Ingrese superficie mínima: ").strip()
-        maximo = input("Ingrese superficie máxima: ").strip()
-
-        if minimo.isdigit() and maximo.isdigit():
-            resultados = filtrar_por_rango_superficie(paises, int(minimo), int(maximo))
-            mostrar_paises(resultados)
-        else:
-            print("Error: los valores de superficie deben ser números enteros.")
-
-    else:
-        print("Opción inválida.")
+        minimo, maximo = pedir_rango_no_negativo(
+            "Ingrese superficie mínima: ",
+            "Ingrese superficie máxima: "
+        )
+        resultados = filtrar_por_rango_superficie(paises, minimo, maximo)
+        mostrar_paises(resultados)
 
 # 5. /////////////// ORDENAMIENTOS \\\\\\\\\\\\\\\
 
@@ -245,7 +276,7 @@ def ordenar_paises(paises):
     print("2. Población")
     print("3. Superficie")
 
-    opcion_criterio = input("\nIngrese una opción: ").strip()
+    opcion_criterio = pedir_opcion("\nIngrese una opción: ", ["1", "2", "3"])
 
     if opcion_criterio == "1":
         criterio = "nombre"
@@ -253,25 +284,17 @@ def ordenar_paises(paises):
         criterio = "poblacion"
     elif opcion_criterio == "3":
         criterio = "superficie"
-    else:
-        print("Opción inválida.")
-        return
-
     print()
     print("¿En qué orden desea mostrar los países?")
     print("1. Ascendente")
     print("2. Descendente")
 
-    opcion_orden = input("\nIngrese una opción: ").strip()
+    opcion_orden = pedir_opcion("\nIngrese una opción: ", ["1", "2"])
 
     if opcion_orden == "1":
         descendente = False
     elif opcion_orden == "2":
         descendente = True
-    else:
-        print("Opción inválida.")
-        return
-
     paises_ordenados = ordenar_segun_criterio(paises, criterio, descendente)
 
     mostrar_paises(paises_ordenados)

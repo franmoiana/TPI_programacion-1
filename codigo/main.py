@@ -1,4 +1,5 @@
 from funciones import *
+from validaciones import pedir_opcion, pedir_texto
 
 # ------- Estructura general del menu -----
 
@@ -13,17 +14,20 @@ def menu():
         print("6. Estadísticas")
         print("0. Salir")
 
-        opcion = input("\nIngrese una opción: ").strip()
+        opcion = pedir_opcion(
+            "\nIngrese una opción: ",
+            ["0", "1", "2", "3", "4", "5", "6"]
+        )
 
         if opcion == "1":
             print()
-            agregar_pais(paises)
-            guardar_csv(paises, "paises.csv")
+            if agregar_pais(paises):
+                guardar_csv(paises, "paises.csv")
         elif opcion == "2":
-            actualizar_pais(paises)
-            guardar_csv(paises, "paises.csv")
+            if actualizar_pais(paises):
+                guardar_csv(paises, "paises.csv")
         elif opcion == "3":
-            texto_busqueda = input("Ingrese el nombre del país a buscar: ").strip()
+            texto_busqueda = pedir_texto("Ingrese el nombre del país a buscar: ")
             resultados = buscar_por_nombre(paises, texto_busqueda)
             mostrar_paises(resultados)
         elif opcion == "4":
@@ -35,8 +39,6 @@ def menu():
         elif opcion == "0":
             print("Saliendo...")
             break
-        else:
-            print("Opción inválida, intente de nuevo.")
 
 paises = cargar_csv("paises.csv")
 menu()
