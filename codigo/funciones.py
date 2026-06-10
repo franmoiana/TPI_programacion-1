@@ -26,7 +26,9 @@ def guardar_csv(paises, ruta):
         for pais in paises:
             escritor.writerow(pais)
 
-# ---------------------- AGREGAR PAIS ------------------------------
+# 1. //////////  AGREGAR PAIS \\\\\\\\\\\\
+
+# ---- Agregar pais junto con sus datos ----
 def agregar_pais(paises):
     nombre = input("Ingrese el nombre del país: ").strip()
 
@@ -62,6 +64,8 @@ def agregar_pais(paises):
     paises.append(nuevo_pais)
 
     print(f"País '{nombre}' agregado correctamente.")
+
+# 2. ///////////////// ACTUALIZAR POBLACION O SUPERFICIE \\\\\\\\\\\\\
 
 
 def actualizar_pais(paises):
@@ -117,7 +121,7 @@ def actualizar_pais(paises):
     else:
         print("Opción inválida.")
 
-# ----- BUSQUEDA DE PAIS ----
+# 3. /////////////// BUSQUEDA DE PAIS \\\\\\\\\\\\\\\
 
 def buscar_por_nombre(paises, texto_busqueda):
     resultados = []
@@ -140,8 +144,39 @@ def mostrar_paises(paises):
             print("Superficie:", pais["superficie"], "km²")
             print("Continente:", pais["continente"])
 
-# ---- FILTROS ----
+# 4. //////////// FILTRAR PAISES \\\\\\\\\\\\
 
+# ------- FILTRAR POR CONTINENTE -------
+def filtrar_por_continente(paises, busqueda_continente):
+    resultados = []
+
+    for pais in paises:
+        if busqueda_continente.lower().strip() == pais["continente"].lower().strip():
+            resultados.append(pais)
+
+    return resultados
+
+# ------- FILTRAR POR POBLACION ---------
+def filtrar_por_rango_poblacion(paises, busqueda_poblacion_min, busqueda_poblacion_max):
+    resultados = []
+
+    for pais in paises:
+        if busqueda_poblacion_min <= pais["poblacion"] <= busqueda_poblacion_max:
+            resultados.append(pais)
+
+    return resultados
+
+# --------- FILTRAR POR SUPERFICIE ---------
+def filtrar_por_rango_superficie(paises, busqueda_superficie_min, busqueda_superficie_max):
+    resultados = []
+
+    for pais in paises:
+        if busqueda_superficie_min <= pais["superficie"] <= busqueda_superficie_max:
+            resultados.append(pais)
+
+    return resultados
+
+# --------- FILTRAR POR PAISES UNIFICADO --------
 def filtrar_paises(paises):
     print()
     print("¿Cómo desea filtrar los países?")
@@ -179,7 +214,29 @@ def filtrar_paises(paises):
     else:
         print("Opción inválida.")
 
-# ---- ORDENAMIENTOS ---- 
+# 5. /////////////// ORDENAMIENTOS \\\\\\\\\\\\\\\
+
+# ---- FUNCIONES PARA ORDENAR ----
+
+def ordenar_segun_criterio(paises, criterio, descendente):
+
+    if criterio == "nombre":
+        orden_nombre = sorted(paises, key=lambda pais: pais["nombre"], reverse=descendente)
+        return orden_nombre
+    
+    elif criterio == "poblacion":
+        orden_poblacion = sorted(paises, key=lambda pais: pais["poblacion"], reverse=descendente)
+        return orden_poblacion
+    
+    elif criterio == "superficie":
+        orden_superficie = sorted(paises, key=lambda pais: pais["superficie"], reverse=descendente)
+        return orden_superficie
+    
+    else:
+        print("Criterio incorrecto")
+        return []
+
+# -------- IMPLEMENTACION FUNCIONES PARA ORDENAR --------
 
 def ordenar_paises(paises):
     print()
@@ -219,9 +276,9 @@ def ordenar_paises(paises):
 
     mostrar_paises(paises_ordenados)
 
-# ---- ESTADISTICAS ----
+# 6. ////////////// ESTADISTICAS \\\\\\\\\\\\\\
 
-# Min y Max poblacion
+# ----- Min y Max poblacion -----
 
 def estadistica_mayor_poblacion(paises):
     pais_mayor = max(paises, key=lambda pais: pais["poblacion"])
@@ -233,7 +290,7 @@ def estadistica_menor_poblacion(paises):
     return pais_menor
 
 
-# Promedio poblacion y superficie
+# ----- Promedio poblacion y superficie -----
 
 def promedio_poblacion(paises):
     total = 0
@@ -257,7 +314,7 @@ def promedio_superficie(paises):
     return promedio
 
 
-# Cantidad de paises por continente
+# ----- Cantidad de paises por continente -----
 
 def paises_por_continente(paises):
     continentes = {}
@@ -273,7 +330,7 @@ def paises_por_continente(paises):
     return continentes
 
 
-# Mostrar estadisticas generales
+# ----- Mostrar estadisticas generales -----
 
 def mostrar_estadisticas(paises):
     if len(paises) == 0:
